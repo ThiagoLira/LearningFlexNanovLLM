@@ -72,7 +72,6 @@ classDiagram
 3. High-level scheduling flow
    
 ```mermaid
-flowchart TD
     A[generate(requests)] --> B[tokenize -> Sequence objs]
     B --> C{waiting or running?}
     C -->|no| Z[return results]
