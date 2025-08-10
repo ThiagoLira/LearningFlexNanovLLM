@@ -2,6 +2,16 @@
 
 This is a step-by-step learning notebook for the [flex-nano-vLLM](https://github.com/changjonathanc/flex-nano-vllm) repo, aimed at **advanced Python developers** who want to implement an inference engine from scratch.
 
+
+Before implementing Flex-Nano-vLLM, this repo will provide simple experiments so one can familiazire with the techniques and modeling involved.
+
+### Experiment 1:
+
+`experiments/AddFlexAttentionQwen`
+
+Adding FlexAttention to HF's implementation of qwen3_modelling and benchmark speed gains.
+
+
 ---
 
 ## 1. Overview
