@@ -73,37 +73,34 @@ classDiagram
    
 ```mermaid
 flowchart TD
-    A[generate(requests)] --> B[tokenize -> Sequence objs]
-    B --> C{waiting or running?}
-    C -->|no| Z[return results]
-    C -->|yes| D[run_one_step()]
 
-    subgraph run_one_step
-      D --> E{Can prefill new seqs?}
-      E -->|yes| F[allocate batch_idx]
-      F --> G[reserve pages for prompt]
-      G --> H[build prefill BlockMask (no-paging)]
-      H --> I[model.forward(..., flex_attn_*, mask)]
-      I --> J[KV cache update]
-      J --> K[sample token]
-      K --> M[check_done -> free pages if finished]
-      M --> N[unfinished -> running]
-      N --> O[/return "prefill"/]
-      E -->|no| P[decode step]
-      P --> Q[reserve page if needed]
-      Q --> R{out of pages?}
-      R -->|yes| S[preempt newest running seq]
-      R -->|no| T[form batch tensors]
-      S --> T
-      T --> U[get_decoding_block_mask(logical)]
-      U --> V[convert to physical BlockMask]
-      V --> W[decode_step(...)]
-      W --> X[model.forward(..., flex_attn_*, mask)]
-      X --> Y[sample token; check_done]
-      Y --> O[/return "decode"/]
-    end
+A[generate(requests)] --> B[tokenize -> Sequence objects]
+B --> C{waiting or running?}
+C -->|no| Z[return results]
+C -->|yes| D[run_one_step]
 
-    O --> C
+D --> E{Can prefill new sequences?}
+E -->|yes| F[allocate batch_idx]
+F --> G[reserve pages for prompt]
+G --> H[build prefill BlockMask]
+H --> I[model.forward with flex_attn_*]
+I --> J[KV cache updated at each layer]
+J --> K[sample one token per sequence]
+K --> L[check_done; free pages if finished]
+L --> N[move unfinished to running]
+N --> C
+
+E -->|no| P[decode step for running sequences]
+P --> Q[ensure capacity; reserve if needed]
+Q --> R{Out of pages?}
+R -->|yes| S[preempt newest running seq -> waiting; erase pages]
+R -->|no| T[form batch_idx, input_ids, input_pos]
+S --> T
+T --> U[get logical decode BlockMask]
+U --> V[convert to physical BlockMask]
+V --> W[model.forward with flex_attn_*]
+W --> X[sample token; check_done]
+X --> C
 ```
 4. One decode step (per layer)
 ```mermaid
